@@ -1,43 +1,24 @@
-// Usturoi Flavius-Gabriel, 324CD
 // Router data plane
 
+			IMPLEMENTATION
 
-	Ideea generala in vederea rezolvarii taskurilor a fost utilizarea struc-
-turilor de date puse la dispozitie in scheletul temei, cum ar fi tabela de rutare
-si tabela ARP, precum si a functiilor auxiliare utile pentru implementarea data
-plane-ului routerului. Cunostintele necesare pentru rezolvarea temei au fost cele
-dobandite in cadrul laboratoarelor (in special laboratorul 4), slide-urile de curs
-si referintele puse la dispozitie in enuntul temei.
+- Forwarding: 		Here, the router implements the necessary steps for forwarding,
+			such as checking the checksum, decrementing the TTL, looking up
+			the routing table, updating the checksum, and rewriting the addresses.
 
+- ICMP protocol: 	To implement this part, it was necessary to go through RFC 792 to 
+			respect the structure and correctly form an ICMP packet of type
+			Echo/Echo Reply, Destination Unreachable and Time Exceeded. To
+			troubleshoot problems encountered when forming the packet, I
+			used tcpdump to obtain the traffic from an interface, writing it
+			to a .pcap file, which I later analyzed with Wireshark. The creation
+			and sending of the packet is carried out in the send_icmp() function.
 
-			REZOLVAREA TASKURILOR
-
-- Procesul de dirijare: In cea mai mare parte, este rezolvarea proprie a laborato-
-			rului 4, cu mici modificari pentru a putea fi adaptata cerin-
-			telor temei. Aici, routerul implementeaza pasii necesari
-			forwarding-ului, cum ar fi verificarea sumei de control, de-
-			crementarea TTL-ului, cautarea in tabela de rutare, actualiza-
-			rea sumei de control si rescrierea adreselor.
-
-- Protocolul ICMP: 	Pentru implementarea acestui task, a fost necesara parcurgerea
-			RFC 792 pentru a respecta structura si a forma corect un pachet
-			ICMP de tip Echo/Echo Reply, Destination Unreachable si Time
-			Exceeded. Pentru a depana problemele intampinate la formarea pache-
-			tului, am folosit tcpdump pentru a obtine traficul de pe o inter-
-			fata, scriindu-l intr-un fisier .pcap, pe care ulterior l-am ana-
-			lizat cu Wireshark. Formarea si trimiterea pachetului se realizeaza
-			in functia send_icmp().
-
-- Checksum incremental: Pentru a nu recalcula suma de control a unui pachet de la zero, doar
-			din motivul decrementarii campului TTL, am urmat instructiunile pre-
-			zentate in RFC 1624 si am aplicat [Eqn. 3] si anume:
-				HC' = ~(~HC + ~m + m'), unde HC' - noua suma de control
-							     HC	 - vechea suma de control
-							     m	 - vechea valoare a campului
-								   modificat
-							     m'	 - noua valoare a campului
-								   modificat
-			Astfel, nu mai este necesar sa apelam de fiecare data functia ip_checksum().
-
-	Singurul memory leak se afla in skel.c:read_rtable(), fp nu este inchis cu fclose(). Nu am
-modificat totusi scheletul temei.
+- Incremental checksum: In order not to recalculate the checksum of a packet from zero,
+			just for the reason of decrementing the TTL field, I followed the
+			instructions presented in RFC 1624 and applied [Eqn. 3], namely:
+				HC' = ~(~HC + ~m + m'), where HC' - new checksum
+							     HC	  - old checksum
+							     m	  - old value of the modified field
+							     m'	  - new value of the modified field
+			Thus, it is no longer necessary to call the ip_checksum() function every time.
